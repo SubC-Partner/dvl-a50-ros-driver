@@ -7,6 +7,8 @@ from std_msgs.msg import String
 from waterlinked_a50_ros_driver.msg import DVL
 from waterlinked_a50_ros_driver.msg import DVLBeam
 import select
+from nav_msgs.msg import Odometry
+import numpy as np
 
 def connect():
 	global s, TCP_IP, TCP_PORT
@@ -53,67 +55,73 @@ def getData():
 	
 
 def publisher():
-	pub_raw = rospy.Publisher('dvl/json_data', String, queue_size=10)
-	pub = rospy.Publisher('dvl/data', DVL, queue_size=10)
-	
-	rate = rospy.Rate(10) # 10hz
-	while not rospy.is_shutdown():
-		raw_data = getData()
-		if do_log_raw_data:
-			rospy.loginfo(raw_data)
-		data = json.loads(raw_data)
-		pub_raw.publish(raw_data)
+    pub_raw = rospy.Publisher('dvl/json_data', String, queue_size=10)
+    pub = rospy.Publisher('dvl/data', DVL, queue_size=10)
+    DVLpub = rospy.Publisher('/BlueRov2/DVL', Odometry, queue_size=10)
+    rate = rospy.Rate(100) # 10hz
+    while not rospy.is_shutdown():
+        raw_data = getData()
+        if do_log_raw_data:
+            rospy.loginfo(raw_data)
+        data = json.loads(raw_data)
+        pub_raw.publish(raw_data)
 		
-		theDVL.header.stamp = rospy.Time.now()
-		theDVL.header.frame_id = "dvl_link"
-		theDVL.time = data["time"]
-		theDVL.velocity.x = data["vx"]
-		theDVL.velocity.y = data["vy"]
-		theDVL.velocity.z = data["vz"]
-		theDVL.fom = data["fom"]
-		theDVL.altitude = data["altitude"]
-		theDVL.velocity_valid = data["velocity_valid"]
-		theDVL.status = data["status"]
-		theDVL.form = data["format"]
+        theDVL.header.stamp = rospy.Time.now()
+        theDVL.header.frame_id = "dvl_link" 
+        theDVL.time = data["time"]
+        theDVL.velocity.x = data["vx"]
+        theDVL.velocity.y = data["vy"]
+        theDVL.velocity.z = data["vz"]
+        theDVL.fom = data["fom"]
+        theDVL.altitude = data["altitude"]
+        theDVL.velocity_valid = data["velocity_valid"]
+        theDVL.status = data["status"]
+        theDVL.form = data["format"]
 		
-		beam0.id = data["transducers"][0]["id"]
-		beam0.velocity = data["transducers"][0]["velocity"]
-		beam0.distance = data["transducers"][0]["distance"]
-		beam0.rssi = data["transducers"][0]["rssi"]
-		beam0.nsd = data["transducers"][0]["nsd"]
-		beam0.valid = data["transducers"][0]["beam_valid"]
+        beam0.id = data["transducers"][0]["id"]
+        beam0.velocity = data["transducers"][0]["velocity"]
+        beam0.distance = data["transducers"][0]["distance"]
+        beam0.rssi = data["transducers"][0]["rssi"]
+        beam0.nsd = data["transducers"][0]["nsd"]
+        beam0.valid = data["transducers"][0]["beam_valid"]
 		
-		beam1.id = data["transducers"][1]["id"]
-		beam1.velocity = data["transducers"][1]["velocity"]
-		beam1.distance = data["transducers"][1]["distance"]
-		beam1.rssi = data["transducers"][1]["rssi"]
-		beam1.nsd = data["transducers"][1]["nsd"]
-		beam1.valid = data["transducers"][1]["beam_valid"]
+        beam1.id = data["transducers"][1]["id"]
+        beam1.velocity = data["transducers"][1]["velocity"]
+        beam1.distance = data["transducers"][1]["distance"]
+        beam1.rssi = data["transducers"][1]["rssi"]
+        beam1.nsd = data["transducers"][1]["nsd"]
+        beam1.valid = data["transducers"][1]["beam_valid"]
 		
-		beam2.id = data["transducers"][2]["id"]
-		beam2.velocity = data["transducers"][2]["velocity"]
-		beam2.distance = data["transducers"][2]["distance"]
-		beam2.rssi = data["transducers"][2]["rssi"]
-		beam2.nsd = data["transducers"][2]["nsd"]
-		beam2.valid = data["transducers"][2]["beam_valid"]
+        beam2.id = data["transducers"][2]["id"]
+        beam2.velocity = data["transducers"][2]["velocity"]
+        beam2.distance = data["transducers"][2]["distance"]
+        beam2.rssi = data["transducers"][2]["rssi"]
+        beam2.nsd = data["transducers"][2]["nsd"]
+        beam2.valid = data["transducers"][2]["beam_valid"]
 		
-		beam3.id = data["transducers"][3]["id"]
-		beam3.velocity = data["transducers"][3]["velocity"]
-		beam3.distance = data["transducers"][3]["distance"]
-		beam3.rssi = data["transducers"][3]["rssi"]
-		beam3.nsd = data["transducers"][3]["nsd"]
-		beam3.valid = data["transducers"][3]["beam_valid"]
+        beam3.id = data["transducers"][3]["id"]
+        beam3.velocity = data["transducers"][3]["velocity"]
+        beam3.distance = data["transducers"][3]["distance"]
+        beam3.rssi = data["transducers"][3]["rssi"]
+        beam3.nsd = data["transducers"][3]["nsd"]
+        beam3.valid = data["transducers"][3]["beam_valid"]
 		
-		theDVL.beams = [beam0, beam1, beam2, beam3]
+        theDVL.beams = [beam0, beam1, beam2, beam3]
 		
-		pub.publish(theDVL)
-		
-		rate.sleep()
+        pub.publish(theDVL)
+        odo = Odometry()
+        odo.header = theDVL.header
+        odo.twist.twist.linear.x =  theDVL.velocity.x #Maybe this should be handeled from a TF
+        odo.twist.twist.linear.y =  -theDVL.velocity.y
+        odo.twist.twist.linear.z =  -theDVL.velocity.z
+        odo.twist.covariance = np.diag([min(0.05, theDVL.fom), min(0.05, theDVL.fom), min(0.05, theDVL.fom), 0.0, 0.0, 0.0]).flatten()
+        DVLpub.publish(odo)
+        rate.sleep()
 
 if __name__ == '__main__':
 	global s, TCP_IP, TCP_PORT, do_log_raw_data
 	rospy.init_node('a50_pub', anonymous=False)
-	TCP_IP = rospy.get_param("~ip", "10.42.0.186")
+	TCP_IP = rospy.get_param("~ip", "192.168.2.10")
 	TCP_PORT = rospy.get_param("~port", 16171)
 	do_log_raw_data = rospy.get_param("~do_log_raw_data", False)
 	connect()
