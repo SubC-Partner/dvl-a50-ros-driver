@@ -12,6 +12,8 @@ import numpy as np
 
 def connect():
 	global s, TCP_IP, TCP_PORT
+	if rospy.is_shutdown():
+		exit()	
 	try:
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((TCP_IP, TCP_PORT))
