@@ -46,3 +46,6 @@ The node publishes data to the topics: "*dvl/json_data*" and "*dvl/data*".
 ![rqt_graph of the package in action](img/a50_graph.png?raw=true "Graph of the package's node-to-node structure")
 
 *The graph illustrates the topics and nodes created when the package is run.*
+
+###TODO:
+When no messages in last ~0.2seconds/crashed, send zero message at ~5hz.
