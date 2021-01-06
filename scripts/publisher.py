@@ -59,7 +59,7 @@ def getData():
 def publisher():
     pub_raw = rospy.Publisher('dvl/json_data', String, queue_size=10)
     pub = rospy.Publisher('dvl/data', DVL, queue_size=10)
-    DVLpub = rospy.Publisher('/bluerov2/DVL', Odometry, queue_size=10)
+    DVLpub = rospy.Publisher('/BlueRov2/DVL', Odometry, queue_size=10)
     rate = rospy.Rate(100) # 10hz
     while not rospy.is_shutdown():
         raw_data = getData()
@@ -113,7 +113,10 @@ def publisher():
         pub.publish(theDVL)
         odo = Odometry()
         odo.header = theDVL.header
-        odo.header.frame_id = "dvl_link"
+        odo.header.stamp = rospy.Time.now()
+        odo.header.frame_id = 'odom'
+        odo.child_frame_id = 'base_link' 
+        # odo.header.frame_id = "dvl_link"
         odo.twist.twist.linear.x =  theDVL.velocity.x #Maybe this should be handeled from a TF
         odo.twist.twist.linear.y =  -theDVL.velocity.y
         odo.twist.twist.linear.z =  -theDVL.velocity.z
