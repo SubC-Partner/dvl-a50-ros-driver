@@ -5,6 +5,11 @@ Water Linked A50 is, by far, the world's smallest commercially available Doppler
 
 ![Image of Water Linked A50](img/DSC04478_1600_web.jpg?raw=true "Water Linked DVL A50")
 
+## Disclaimer
+
+This driver has been modified to work with the Bluerov2 and the firmware version of the DVL a50 > 2.08. 
+The updated version of the DVL allows to access the IMU data and dead reckoning estimation inside the DVL. Here I am creating an extra publisher to access the IMU data but I am disregarding the dead reckoning estimation. 
+
 ### Prerequisites
 The package has been tested with ROS Kinetic, and should work with most distros of ROS. Although using it with distros older than Hydro may require some tweeking. The package is coded in Python for easier readability, as such you would need to have Python installed. Preferably Python 2.7 as some distros of ROS doesn't support Python 3.
 
@@ -39,9 +44,11 @@ rosrun waterlinked_a50_ros_driver subscriber_gui.py
 ![GUI Subscriber](img/a50_gui.png?raw=true "Interface as seen when running the GUI version of the subscriber")
 
 ## Documentation
-The node publishes data to the topics: "*dvl/json_data*" and "*dvl/data*".
+The node publishes data to the topics: "*dvl/json_data*",  "*dvl/data*", "*/BlueRov2/DVL*" and  "*/BlueRov2/DVL/imu*".
 * *dvl/json_data*: uses a simple String formated topic that publishes the raw json data coming from the DVL.
-* *dvl/data*: Uses a custom message type that structures the parsed data following our protocol. Read more about the protocol here: [DVL Protocol](https://waterlinked.github.io/docs/dvl/dvl-protocol/)
+* *dvl/data*: Uses a custom message type that structures the parsed data following our protocol. Read more about the protocol here: [DVL Protocol](https://waterlinked.github.io/docs/dvl/dvl-protocol/)   
+* "*/BlueRov2/DVL*": Publishes the DVL data in an odometry message from the nav_msgs. 
+* "*/BlueRov2/DVL/imu*"  Publishes the imu data in an Imu message from the sensor_msgs.
 
 ![rqt_graph of the package in action](img/a50_graph.png?raw=true "Graph of the package's node-to-node structure")
 
