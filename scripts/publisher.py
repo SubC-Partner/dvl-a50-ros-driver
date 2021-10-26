@@ -164,7 +164,7 @@ def publisher():
             imu_msg.orientation.z = qz
             imu_msg.orientation.w = qw
             # Should this be pos_std*np.oens(9)??
-            imu_msg.orientation_covariance = 0.1*np.ones(9)
+            imu_msg.orientation_covariance = np.diag([0.1, 0.1, 0.1]).flatten()
             IMUpub.publish(imu_msg)
 
         rate.sleep()
