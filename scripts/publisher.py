@@ -129,9 +129,9 @@ def publisher():
             odo.header.frame_id = 'odom'
             odo.child_frame_id = 'dvl_link' 
             # odo.header.frame_id = "dvl_link"
-            odo.twist.twist.linear.x =  theDVL.velocity.y #Maybe this should be handeled from a TF
-            odo.twist.twist.linear.y =  theDVL.velocity.x # 
-            odo.twist.twist.linear.z =  -theDVL.velocity.z
+            odo.twist.twist.linear.x =  theDVL.velocity.x #Maybe this should be handeled from a TF
+            odo.twist.twist.linear.y =  theDVL.velocity.y # 
+            odo.twist.twist.linear.z =  theDVL.velocity.z
             odo.twist.covariance = np.diag([min(0.05, math.pow(theDVL.fom,2)), min(0.05, math.pow(theDVL.fom,2)), min(0.05, math.pow(theDVL.fom,2)), 0.0, 0.0, 0.0]).flatten()
             DVLpub.publish(odo)
 
